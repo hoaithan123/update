@@ -8,6 +8,7 @@ public class AttendanceDAO {
 
     /**
      * Điểm danh sinh viên theo mã sinh viên, lớp và môn học (Teacher)
+     *   * Điểm danh sinh viên theo mã sinh viên, lớp và môn học (Teacher)
      */
     public boolean markAttendance(String studentCode, int classId, int subjectId, String status) {
         String insertAttendance = "INSERT INTO attendance (student_id, class_id, subject_id, attendance_date, status) " +
