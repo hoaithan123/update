@@ -14,6 +14,7 @@
         private ClassDAO classDAO = new ClassDAO();
         private JTable studentTable;
         private DefaultTableModel studentTableModel;
+
         public DashboardGUI(String username, String role) {
             this.username = username;
             this.role = role;
@@ -25,8 +26,16 @@
             setLocationRelativeTo(null);
             setLayout(new BorderLayout());
 
+            // Lấy tên sinh viên từ mã số sinh viên
+            String studentName = studentDAO.getStudentNameByCode(username);
+
+            // Nếu tên sinh viên không tìm thấy, hiển thị mã số sinh viên thay vì tên
+            if (studentName == null) {
+                studentName = username; // Dùng mã số sinh viên làm tên nếu không tìm thấy trong CSDL
+            }
+
             // Header
-            JLabel headerLabel = new JLabel("Chào mừng, " + username + " (" + role + ")", JLabel.CENTER);
+            JLabel headerLabel = new JLabel("Chào mừng, " + studentName + " (" + role + ")", JLabel.CENTER);
             headerLabel.setFont(new Font("Arial", Font.BOLD, 24));
             headerLabel.setBorder(new EmptyBorder(20, 0, 20, 0));
             add(headerLabel, BorderLayout.NORTH);
@@ -238,15 +247,27 @@
                     return;
                 }
 
-                Student student = new Student(0, code, name, email, 0, address, phone);
-                if (studentDAO.addStudent(student)) {
-                    JOptionPane.showMessageDialog(this, "Thêm sinh viên thành công!");
-                    clearAddStudentFields(codeField, nameField, emailField, phoneField, addressField);
-                    updateStudentTable(); // Cập nhật lại bảng sau khi thêm
+                // Đăng ký tài khoản cho sinh viên
+                // Tạo đối tượng UserDAO
+                UserDAO userDAO = new UserDAO();
+
+// Gọi phương thức registerUser thông qua đối tượng userDAO
+                if (userDAO.registerUser(code, phone, "student")) {
+                    // Tiến hành thêm sinh viên vào cơ sở dữ liệu sau khi đăng ký tài khoản thành công
+                    Student student = new Student(0, code, name, email, 0, address, phone);
+                    if (studentDAO.addStudent(student)) {
+                        JOptionPane.showMessageDialog(this, "Thêm sinh viên thành công!");
+                        clearAddStudentFields(codeField, nameField, emailField, phoneField, addressField);
+                        updateStudentTable(); // Cập nhật lại bảng sau khi thêm
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Thêm sinh viên thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    }
                 } else {
-                    JOptionPane.showMessageDialog(this, "Thêm sinh viên thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Đăng ký tài khoản sinh viên thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
+
             });
+
 
             return mainPanel;
         }
